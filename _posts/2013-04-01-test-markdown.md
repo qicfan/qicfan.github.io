@@ -20,3 +20,4 @@ category: life
 这是一个段落
 
 	{{ page.date | date_to_string }}
+
