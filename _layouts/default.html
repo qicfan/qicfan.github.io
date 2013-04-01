@@ -56,11 +56,13 @@
 					<div class="well sidebar-nav">
 						<ul class="nav nav-list">
 							<li class="active"><a href="/">首页</a></li>
-							<li><a href="#">php</a></li>
-							<li><a href="#">c</a></li>
-							<li><a href="#">ios</a></li>
-							<li><a href="#">pmp</a></li>
-							<li><a href="#">life</a></li>
+							<ul>
+    						{% for category in site.categories %}
+    							<li>
+    								<a href="/categories/{\{ category | first }\}/" title="view all posts">{\{ category | first }\} {\{ category | last | size }\}</a>
+    							</li>
+    						{% endfor %}
+							</ul>
 						</ul>
 					</div>
 				</div>
