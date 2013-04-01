@@ -15,11 +15,11 @@ category: life
 这是一个段落
 
 
-	这是一个缩进的段落
+这是一个缩进的段落
 	> 这是一个引言
 
 
 这是一个段落
 
 
-	{{ page.date | date_to_string }}
+{{ page.date | date_to_string }}
