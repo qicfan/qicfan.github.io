@@ -11,3 +11,4 @@ author:
     email: qicfan@gmail.com
     twitter: twitter.com/qicfan
 description: zeroq的小作坊
+paginate: 30 # the number of post per page
