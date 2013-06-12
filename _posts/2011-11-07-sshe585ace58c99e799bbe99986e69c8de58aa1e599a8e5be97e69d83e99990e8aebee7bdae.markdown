@@ -1,0 +1,39 @@
+---
+author: qicfan
+comments: true
+date: 2011-11-07 06:41:50+00:00
+layout: post
+slug: ssh%e5%85%ac%e5%8c%99%e7%99%bb%e9%99%86%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%be%97%e6%9d%83%e9%99%90%e8%ae%be%e7%bd%ae
+title: ssh公匙登陆服务器得权限设置
+wordpress_id: 302
+categories:
+- 技术杂谈
+tags:
+- id_rsa
+- ssh
+---
+
+这个教训告诉我，适当的时候应该去抽口烟，放松头脑！
+给developer加个ssh挑战，让他从w1到w5不需要密码
+弄了老半天没成功，在w1
+
+scp rsa_id.pub [www@192.168.1.2:/home/www/.ssh/authorized_keys](mailto:www@192.168.1.2:/home/www/.ssh/authorized_keys)
+
+然后ssh 192.168.1.2结果还是要密码。
+在w5的secure日志里硬是提示
+Authentication refused: bad ownership or modes for directory /home/www
+
+一开始一直是检查w5上的.ssh目录。n小时后才发现w5上的www目录权限居然为775
+
+总结一下查错步骤
+
+用户目录权限为 755 或者 700就是不能是77x
+.ssh目录权限必须为755
+rsa_id.pub 及authorized_keys权限必须为644
+rsa_id权限必须为600
+
+
+
+————————————————————————————————————————————————————
+
+以上为从网络上查询得到的一些资料，主要问题是SSH公钥登陆时因为文件系统权限造成的无法登陆问题的解决方法。

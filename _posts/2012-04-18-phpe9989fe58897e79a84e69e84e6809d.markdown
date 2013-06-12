@@ -1,0 +1,44 @@
+---
+author: qicfan
+comments: true
+date: 2012-04-18 16:04:55+00:00
+layout: post
+slug: php%e9%98%9f%e5%88%97%e7%9a%84%e6%9e%84%e6%80%9d
+title: php队列的构思
+wordpress_id: 424
+categories:
+- php
+- 技术杂谈
+tags:
+- fastcgi_finish_request
+- php队列
+- queue
+---
+
+周末突然来的一个构思，基于php-fpm提供的fastcgi_finish_request函数，可以实现一个PHP的处理队列，大致思路如下：
+
+[![](http://zeroq.me/wp-content/uploads/2012/04/php_queue.png)](http://zeroq.me/p/424/php_queue)
+
+主要就是在一个PHP请求的前半部分调用封装好的Queue中的push方法，将要处理的数据入队列；
+然后判断是否有处理进程正在执行（是否有锁），如果有则直接退出（exit)；
+如果没有处理进程，则执行fastcgi_finish_request方法，将请求返回，但是进程将继续执行后续代码。
+后续代码作为worker进程首先加锁，然后进入循环，读取队列数据，并且处理，直到队列中无数据，然后退出。
+
+这样就可以实现一个异步的请求队列，这个模型适用于单业务中需要队列保证一致性和处理性能的场景，当然需要一个外部存储方案比如redis，下面是一个大致的例子：
+
+    
+    require_once "Queue.php";
+    $queue = new Queue('test_queue');
+    $queue->push($_POST);
+    if ($queue->isLock()) {
+        exit();
+    }
+    fastcgi_finish_request();
+    $queue->lock();
+    while (!$queue->isEof()) {
+        you_do($queue->pop());
+    }
+    
+    function you_do($data) {
+        // do_something
+    }

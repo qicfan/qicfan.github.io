@@ -1,0 +1,14 @@
+---
+author: qicfan
+comments: true
+date: 2012-05-02 07:03:22+00:00
+layout: post
+published: false
+slug: '%e6%80%81%e5%ba%a6'
+title: 态度
+wordpress_id: 465
+categories:
+- python
+---
+
+None

@@ -1,0 +1,75 @@
+---
+author: qicfan
+comments: true
+date: 2011-04-25 13:17:24+00:00
+layout: post
+slug: python%e4%b8%ad%e7%9a%84%e5%8f%8d%e5%b0%84
+title: python中的反射
+wordpress_id: 67
+categories:
+- python
+tags:
+- globals()
+- python
+- python反射
+- 反射
+---
+
+在用php的时候，我们经常会出现这样的调用
+
+    
+    class obj {
+        function __contruct() {
+            return true;
+        }
+    }
+    
+    $a = "obj";
+    
+    $obj  = new $a();
+
+
+php中的这种用法确实很方便，在python中也提供了这样的一种反射机制：**globals()**
+以下摘自：[ python中的反射和自省](http://blog.csdn.net/lokibalder/archive/2008/12/06/3459722.aspx)
+globals()函数返回一个map,这个map的key是全局范围内对象的名字，value是该对象的实例
+在不导入任何module下，执行globals（）的结果如下：
+
+    
+    >>> globals()
+    {'__builtins__': , '__name__': '__main__', '__doc__': None, '__package__': None}
+
+
+在导入sgmllib，如下:
+
+    
+    >>> globals()
+    {'__builtins__': <module '__builtin__' (built-in)>, '__name__': '__main__', 'sgmllib': <module 'sgmllib' from 'D:\Program Files\Python26\lib\sgmllib.pyc'>, '__doc__': None, '__package__': None}
+
+
+如果导入类后，在map中，可以找到类:
+
+    
+    >>> from sgmllib import SGMLParser
+    >>> globals()
+    {'sgmllib': <module 'sgmllib' from 'D:\Program Files\Python26\lib\sgmllib.pyc'>, 'SGMLParser': <class sgmllib.SGMLParser at 0x01BA0F90>, '__builtins__': <module '__builtin__' (built-in)>, '__package__': None, '__name__': '__main__', '__doc__': None}
+
+
+所以，只要将class的名字最为key，即可得到class。如下：
+
+    
+    >>> globals()['SGMLParser']
+    <class sgmllib.SGMLParser at 0x01BA0F90>
+
+
+我们在使用中，只需要这样来使用globals()方法即可实现与PHP中类似的效果（通俗说从字符串变量中实例化对象），即JAVA中的反射机制：
+
+    
+    class obj:
+        def __init__(self, str):
+            print str
+    
+    var = 'obj'
+    # 通过变量var实例化对象obj
+    instance = globals()[var]
+    >>> instance
+    <class __main__.obj at 0x01BA0AE0>

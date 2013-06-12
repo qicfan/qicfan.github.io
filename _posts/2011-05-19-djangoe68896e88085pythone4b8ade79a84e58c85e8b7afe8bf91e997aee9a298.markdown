@@ -1,0 +1,25 @@
+---
+author: qicfan
+comments: true
+date: 2011-05-19 03:04:04+00:00
+layout: post
+slug: django%e6%88%96%e8%80%85python%e4%b8%ad%e7%9a%84%e5%8c%85%e8%b7%af%e8%bf%91%e9%97%ae%e9%a2%98
+title: django或者python中的包路径问题
+wordpress_id: 182
+categories:
+- python
+tags:
+- django
+- path
+- python
+---
+
+今天因为修改了源代码，所以需要重启django的fastcgi进程，kill之后，运行命令，确提示：Error: Could not import settings 'aituans.settings' (Is it on sys.path?): No module named settings
+
+找不到settings，可是我的settings.py明明存在，而且没有动过，应该不会出问题；然后就想到可能是路径问题，仔细一看目录，在主目录/home/www/aituans下还有一个aituans文件夹，难道因为重名，导致python无法解析到settings.py？
+
+kill掉aituans/aituans/下正在运行的进程，然后给文件夹改名，然后再启动django的进程，OK了。
+
+
+
+特此记录下

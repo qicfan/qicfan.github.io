@@ -1,0 +1,13 @@
+---
+author: qicfan
+comments: true
+date: 2011-12-19 04:23:26+00:00
+layout: post
+slug: ssh%e7%a7%81%e9%92%a5%e5%9b%a0%e4%b8%ba%e6%9d%83%e9%99%90%e9%97%ae%e9%a2%98%e6%97%a0%e6%b3%95%e7%99%bb%e9%99%86
+title: SSH私钥因为权限问题无法登陆
+wordpress_id: 348
+categories:
+- python
+---
+
+id_rsa等私钥必须设置为0600才能使用

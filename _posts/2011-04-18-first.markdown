@@ -1,0 +1,15 @@
+---
+author: qicfan
+comments: true
+date: 2011-04-18 06:07:25+00:00
+layout: post
+slug: first
+title: 终于把自己的域名买下来，博客移来移去，终于可以安顿下来了。
+wordpress_id: 6
+categories:
+- 生活
+tags:
+- ME
+---
+
+第一篇文章，终于把博客又建起来了，不过以前的数据没了，慢慢继续积累吧！

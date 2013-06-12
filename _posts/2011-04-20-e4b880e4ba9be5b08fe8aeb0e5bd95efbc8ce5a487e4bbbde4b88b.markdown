@@ -1,0 +1,22 @@
+---
+author: qicfan
+comments: true
+date: 2011-04-20 07:56:41+00:00
+layout: post
+slug: '%e4%b8%80%e4%ba%9b%e5%b0%8f%e8%ae%b0%e5%bd%95%ef%bc%8c%e5%a4%87%e4%bb%bd%e4%b8%8b'
+title: 一些小记录，备份下
+wordpress_id: 34
+categories:
+- 技术杂谈
+tags:
+- cookie
+- css cursor
+- onclick
+- output_buffer
+---
+
+css cursor IE下只支持全路径的URL地址如：http://aaaa/img/xx.cur，不支持image/xx.cur这样的本地格式路径
+
+A链接的ONCLICK方法，必须返回false，才能禁止跳转，如果没有返回值，可能火狐下可以用，但是IE下可能会出问题。
+
+无法设置COOKIE可能跟PHP.INI里的output_buffer是否开启有关系
