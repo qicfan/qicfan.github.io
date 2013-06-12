@@ -82,7 +82,7 @@ JB :
   comments :
     provider : disqus
     disqus :
-      short_name : zeroq.me
+      short_name : zeroq
     livefyre :
       site_id : 123
     intensedebate :
