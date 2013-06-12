@@ -1,0 +1,208 @@
+---
+layout: post
+title: 一个面试题
+tags:
+- php
+- 贪吃蛇
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  views: '132'
+---
+今天朋友过来问了我一个问题，他面试过程中碰到的，题目具体我也不知道，需要实现的效果如下：
+<table>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>16</td>
+<td>17</td>
+<td>18</td>
+<td>19</td>
+<td>6</td>
+</tr>
+<tr>
+<td>15</td>
+<td>24</td>
+<td>25</td>
+<td>20</td>
+<td>7</td>
+</tr>
+<tr>
+<td>14</td>
+<td>23</td>
+<td>22</td>
+<td>21</td>
+<td>8</td>
+</tr>
+<tr>
+<td>13</td>
+<td>12</td>
+<td>11</td>
+<td>10</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+这个题应该就是让递增数字实现螺旋型排列（具体我也不好描述），大致思考了下，出来一个思路：
+
+创建一个递增数的循环，从1到x*y（即最大值），每当达到一行的尾部就拐弯，到达最大值时结束循环，这个过程中每次循环都填充一个数字到相应的坐标。
+
+这个思路有两个要点：
+<ol>
+	<li>前进方向</li>
+	<li>拐角检测</li>
+</ol>
+前进方向我分为4个部分，即右、下、左、上，分别用：1、2、3、4代替
+
+拐角检测需要主要两点：1、当后一个坐标已经被填充时拐弯或者超出高或者宽时拐弯
+
+下面是具体实现的代码：
+<pre class="brush:[php]">// 输入宽和高
+$x = 5;
+$y = 5;
+// 初始化当前的坐标和当前方向
+$direction = 1;
+$xp = 0;
+$yp = 0;
+// 初始化当前数字和最大数字
+$id = 1;
+$max = $x * $y;
+// 初始化数组
+$array = array();
+while (true) {
+    if ($id &gt; $max) {
+        break;
+    }
+    // 填充数字
+    $array[$xp][$yp] = $id;
+    $id ++;
+    // 判断是否越界，如果越界则拐弯
+    switch ($direction) {
+        case 1:
+            $yp ++;
+            if (isset($array[$xp][$yp]) || $yp &gt;= $y) {
+                $direction = 2;
+                $yp --;
+                $xp ++;
+            }
+            break;
+        case 2:
+            $xp ++;
+            if (isset($array[$xp][$yp]) || $xp &gt;= $x) {
+                $direction = 3;
+                $xp --;
+                $yp --;
+            }
+            break;
+        case 3:
+            $yp --;
+            if (isset($array[$xp][$yp]) || $yp &lt; 0) {
+                $direction = 4;
+                $yp ++;
+                $xp --;
+            }
+            break;
+        case 4:
+            $xp --;
+            if (isset($array[$xp][$yp]) || $xp &lt; 0) {
+                $direction = 1;
+                $xp ++;
+                $yp ++;
+            }
+            break;
+    }
+}
+// 显示
+echo "&lt;table&gt;";
+for ($i=0;$i&lt;$x;$i++) {
+    echo "&lt;tr&gt;";
+    for ($k=0;$k&lt;$y;$k++) {
+        echo "&lt;td&gt;{$array[$i][$k]}&lt;/td&gt;";
+    }
+    echo "&lt;/tr&gt;";
+}
+echo "&lt;/table&gt;";</pre>
+$x和$y的值可以随意修改，比如我们修改为:$x = 10; $y = 5；则显示效果如下：
+<table>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>26</td>
+<td>27</td>
+<td>28</td>
+<td>29</td>
+<td>6</td>
+</tr>
+<tr>
+<td>25</td>
+<td>44</td>
+<td>45</td>
+<td>30</td>
+<td>7</td>
+</tr>
+<tr>
+<td>24</td>
+<td>43</td>
+<td>46</td>
+<td>31</td>
+<td>8</td>
+</tr>
+<tr>
+<td>23</td>
+<td>42</td>
+<td>47</td>
+<td>32</td>
+<td>9</td>
+</tr>
+<tr>
+<td>22</td>
+<td>41</td>
+<td>48</td>
+<td>33</td>
+<td>10</td>
+</tr>
+<tr>
+<td>21</td>
+<td>40</td>
+<td>49</td>
+<td>34</td>
+<td>11</td>
+</tr>
+<tr>
+<td>20</td>
+<td>39</td>
+<td>50</td>
+<td>35</td>
+<td>12</td>
+</tr>
+<tr>
+<td>19</td>
+<td>38</td>
+<td>37</td>
+<td>36</td>
+<td>13</td>
+</tr>
+<tr>
+<td>18</td>
+<td>17</td>
+<td>16</td>
+<td>15</td>
+<td>14</td>
+</tr>
+</tbody>
+</table>
+&nbsp;

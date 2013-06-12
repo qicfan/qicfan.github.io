@@ -1,0 +1,33 @@
+---
+layout: post
+title: python的字符串和文件操作以及编码问题
+tags:
+- codecs
+- python
+- 编码
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  views: '203'
+---
+最近在完善和重构团购蜘蛛的代码，碰到了很多的问题，最纠结的莫过于编码问题了，因为要处理大量的中文网页，所以怎么在UTF-8,GBK,UNICODE之间进行转换就特别重要，尤其是在WINDOWS平台下，下面具体说说
+
+我碰到的问题主要是在WINDOWS，LINUX暂时没有测试，估计没啥问题，问题是这样的：
+
+代码主要是抓取网页内容，然后保存到本地文件中；这段代码在eclipse中测试的时候，可以正常执行；但是在WINDOWS CMD命令行下执行，就会出现异常并且本地文件创建了但是没有任何内容，异常主要就是提示ascii codecs什么什么的，说白了就是编码问题。
+
+粗看这个问题，首先想到的就是检查数据格式，并且转码，然后我这么做了，数据中还真有几个非unicode的数据，转换之，测试——继续异常！
+
+然后查了查资料和日志，发现问题出在file.write上，难道在windows下，没办法保存unicode的文件？（windows下默认是ascii编码，可能器中要做一次encode('ascii')所以出错了）然后查到了codecs模块，说是专门对编码进行操作的，然后将open(filename, mode)函数改成了codecs.open(filename, mode, charset)，然后继续write，这回再测试，成功了！
+
+然后检查保存到本地的文件，发现其中有一个网站的页面保存后乱码了，首先想到的就是内容下载函数的问题，那个地方我没做编码转换，因为网页有的是utf-8，有的是gbk，所以如果要转码，必须得先知道这些字符串是什么编码的，没办法只能检查网页中的meta标签的编码设置，根据器中的charset来设置decode(charset)，默认使用utf-8解码。经过这样修改后，保存文件终于正常了
+
+&nbsp;
+
+总结下：
+
+1、如果读写文件有编码要求，就是用codecs模块，这样可以保证安全不出错。
+
+2、python内部是用unicode来处理的，所以字符串需要转换成unicode，否则一些模块会发生异常

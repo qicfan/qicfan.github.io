@@ -1,0 +1,21 @@
+---
+layout: post
+title: 记录一个ubuntu的小知识点
+tags:
+- ubuntu
+- UBUNTU_MENUPROXY
+- ZendStudio
+- 技术杂谈
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  views: '102'
+---
+今儿给本机本上的Ubuntu 11.04安装了ZendStudio 8，然后打开准备输入注册码的时候，发现菜单栏就三个选项Source、Window、RUN，没有HELP，也就没办法输入序列号呀，然后GOOGLE，发现了一个全局设置UBUNTU_MENUPROXY，禁用这个选项就可以回复软件本身的菜单栏，代码如下：
+<pre class="brush:[shell]">
+export UBUNTU_MENUPROXY=0
+./ZendStudio
+</pre>
+以后有需要的时候都可以这么干。

@@ -1,0 +1,149 @@
+---
+layout: post
+title: 智联招聘竟然明文保存用户密码！
+tags:
+- 明文密码
+- 智联招聘
+- 生活
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  views: '284'
+---
+女朋友准备换工作，所以就打开智联招聘准备投投简历，可惜登录的时候密码错误，又把密码给忘了（老是记不住密码，难道女人都这样？），当时我正好在旁边围观，就让她使用找回密码吧，也顺便看下智联的密码找回流程（看来有了强迫症！）！
+
+仔细观察了下，智联竟然使用ASP开发的，以前真没注意过，查了下它的http header如下：
+<blockquote>
+<div>
+<table cellspacing="1" cellpadding="5" width="600px">
+<tbody>
+<tr>
+<td colspan="2" align="left">网址 <a href="http://tool.chinaz.com/Redirect.aspx?url=my.zhaopin.com/loginmgr/forgetpassword.asp" target="_blank">my.zhaopin.com/loginmgr/forgetpassword.asp</a> 检测结果如下:</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">是否压缩</span></td>
+<td><strong><span style="color: blue;">是</span></strong></td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">压缩类型</span></td>
+<td><strong>gzip</strong></td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">原始文件大小</span></td>
+<td><strong>15930 字节</strong></td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">压缩后文件大小</span></td>
+<td><strong>5698 字节</strong></td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">压缩率（估计值）</span></td>
+<td><strong>64.23%</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div>
+<table cellspacing="1" cellpadding="5" width="600px">
+<tbody>
+<tr>
+<td colspan="2" align="left"><strong>Header信息</strong></td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Date</span></td>
+<td>Sat, 14 May 2011 15:09:24 GMT</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Server</span></td>
+<td>Microsoft-IIS/6.0</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">X-Powered-By</span></td>
+<td>ASP.NET</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Content-Type</span></td>
+<td>text/html; Charset=utf-8</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Expires</span></td>
+<td>Sat, 14 May 2011 15:09:24 GMT</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Cache-Control</span></td>
+<td>private</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Content-Encoding</span></td>
+<td>gzip</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Content-Length</span></td>
+<td>5698</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">X-Cache</span></td>
+<td>MISS from web-s62.zhaopin.com</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">X-Cache-Lookup</span></td>
+<td>MISS from web-s62.zhaopin.com:80</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Via</span></td>
+<td>1.0 web-s62.zhaopin.com:80 (squid/2.6.STABLE16)</td>
+</tr>
+<tr>
+<td width="20%"><span style="color: #0269ac;">Connection</span></td>
+<td>keep-alive</td>
+</tr>
+</tbody>
+</table>
+</div>
+&nbsp;</blockquote>
+开启了GZIP，用的确实是IIS6，看来很大可能是ASP开发的了，真是不太明白，什么年代了，还在使用已经被淘汰的技术，不理解！（可惜更让人震惊和不理解的还在后边）
+
+在登录页面登录按钮边上有一个忘记密码的链接，点击进入找回密码页面，只需要输入邮箱和验证码即可，这到也无所谓，反正登录帐号就是邮箱；输入完成后，就是进入邮箱查看邮件了，有过无数经验的人都应该很熟悉
+
+邮件很快发过来了，打开邮件看了内容以后我震惊了，以下是邮件内容：
+<blockquote>
+<table border="0" cellspacing="0" cellpadding="0" width="530" align="center">
+<tbody>
+<tr>
+<td><a href="http://www.zhaopin.com/" target="_blank"><img src="http://images.zhaopin.com/new/zhaopin-newlogo.gif" border="0" alt="" /></a></td>
+</tr>
+<tr>
+<td valign="top">尊敬的用户您好：
+
+您使用了找回密码的功能，下面是您注册时使用的用户名和密码，请妥善保管。
+<table border="0" width="327">
+<tbody>
+<tr>
+<td width="115" align="right">您的用户名：</td>
+<td width="202"><span style="color: #aa0000;">xxxxxx@21cn.com</span></td>
+</tr>
+<tr>
+<td align="right">您的密码：</td>
+<td><span style="color: #aa0000;">123456</span></td>
+</tr>
+<tr>
+<td colspan="2" align="right"><a href="http://interface..zhaopin.com/email/agent.asp?source_code=js_020&amp;usi={USERCOOKIE_URL}&amp;url=%E9%9C%80%E8%A6%81%E8%B7%B3%E8%BD%AC%E7%9A%84%E8%B7%AF%E5%BE%84"></a></td>
+</tr>
+</tbody>
+</table>
+感谢您对智联招聘网的全力支持。
+
+智联招聘网</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+&nbsp;
+
+让我震惊得是，智联给我发过来的就是我忘记的密码，智联怎么知道我的密码的，还能给我发过来。。。用过密码找回功能的人都应该知道，大部分网站是让你点击一个链接，然后在新打开的页面修改密码；或者发给你一个临时密码，让你进入系统去修改密码。而智联呢？竟然给我们发过来了我们的注册密码！！！
+
+做过开发的人都直到，如果要发送注册密码明文到用户邮箱，那只有一个可能，就是智联没有采用不可逆算法对密码进行加密，只要有权限，任何人都可能直到用户的密码明文，这是赤裸裸的强盗行径！！！大部分人在网上的密码可能只有一个，如果就这样被别人知道了，那用户在互联网上还有何隐私存在！！
+
+希望大家都不要在用这样的网站了，用户资料和隐私没有任何的保障！！

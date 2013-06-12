@@ -1,0 +1,175 @@
+---
+layout: post
+title: 今天无聊的时候对比了下PHP中的插入排序和冒泡排序
+tags:
+- php
+- PHP数组排序
+- 冒泡排序
+- 插入排序
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  views: '103'
+---
+先上代码：
+<pre class="brush:[php]">/**
+ *
+ * 使用插入排序对数组进行排序，默认从大到小排列
+ * 排序完成后返回排序后的新数组
+ *
+ * @param array $array			需要排序的数组
+ * @param string $key			如果是二维数组排序，请给出作为依据的键。如：array(array('a'=&gt;'a', 'b'=&gt;1))如果要按照b排序，则$key为b
+ * @param int $sort_flag		排序规则，默认为从大到小，暂时没有实现这个功能
+ *
+ * @return array
+ */
+function array_isort(&amp;$array, $key, $sort_flag = 1) {
+	$new_array = array ();
+	$last = false;
+	$last_i = 0;
+	foreach ( $array as $k =&gt; $var ) {
+		$current_var = get_array_value($var, $key);
+
+		if ($last === false) {
+			array_push ( $new_array, $var );
+			$last = $current_var;
+			$last_i = 0;
+			continue;
+		}
+		if ($current_var &gt; $last) {
+			for($i = $last_i; $i &gt;= 0; $i --) {
+				$next_var = get_array_value($new_array[$i], $key);
+				if ($current_var &lt; $next_var) {
+					$last_i = $i + 1;
+					array_insert ( $new_array, $last_i, array ($var ) );
+					break;
+				} elseif ($i == 0) {
+					array_unshift ( $new_array, $var );
+					$last_i = 0;
+					break;
+				}
+			}
+		} else {
+			for($i = $last_i; $i &lt; count ( $new_array ); $i ++) { 				$next_var = get_array_value($new_array[$i], $key); 				if ($current_var &gt; $next_var) {
+					$last_i = $i;
+					array_insert ( $new_array, $i, array ($var ) );
+					break;
+				} elseif ($i == count ( $new_array ) - 1) {
+					array_push ( $new_array, $var );
+					$last_i = count ( $new_array ) - 1;
+					break;
+				}
+			}
+		}
+		$last = $current_var;
+	}
+	return $new_array;
+}
+
+/**
+ *
+ * 使用冒泡排序对数组进行排序
+ * @param unknown_type $array
+ * @param unknown_type $key
+ * @param unknown_type $sort_flag
+ */
+function array_bsort(&amp;$array, $key = '', $sort_flag = 1) {
+	$max = count($array);
+	$temp = '';
+	while (1) {
+		if($max  $n) {
+				$temp = $array[$i + 1];
+				$array[$i + 1] = $array[$i];
+				$array[$i] = $temp;
+			}
+		}
+		$max --;
+	}
+}
+
+function get_time() {
+	$time = explode ( " ", microtime () );
+	$time = $time [0] + $time [1];
+	return $time;
+}
+
+function get_array_value($array, $key) {
+	if (is_array($array) &amp;&amp; isset($array[$key])) {
+		return $array[$key];
+	}
+	return $array;
+}
+
+function array_insert(&amp;$array, $position, $insert_array) {
+	$first_array = array_splice ( $array, 0, $position );
+	$array = array_merge ( $first_array, $insert_array, $array );
+}
+$size = 10;
+for ($i = 1; $i &lt; 10; $i ++) {
+	$array = range(1, $size * $i, 1);
+	shuffle($array);
+	$start_time = get_time ();
+	$new_array = array_isort($array, 'b');
+	$end_time = get_time ();
+	echo $i * $size . " items, InsertSort execute time: " . sprintf ( "%2.6f", $end_time - $start_time ) . " seconds
+";
+	$start_time = get_time ();
+	$new_array = array_bsort($array, 'b');
+	$end_time = get_time ();
+	echo $i * $size . " items, BubbleSort execute time: " . sprintf ( "%2.6f", $end_time - $start_time ) . " seconds
+";
+	echo "</pre>
+
+<hr />
+
+"; }
+
+执行结果：
+10 items, InsertSort execute time: 0.000166 seconds
+10 items, BubbleSort execute time: 0.000126 seconds
+
+<hr />
+
+20 items, InsertSort execute time: 0.000326 seconds
+20 items, BubbleSort execute time: 0.000510 seconds
+
+<hr />
+
+30 items, InsertSort execute time: 0.000391 seconds
+30 items, BubbleSort execute time: 0.000543 seconds
+
+<hr />
+
+40 items, InsertSort execute time: 0.000494 seconds
+40 items, BubbleSort execute time: 0.000974 seconds
+
+<hr />
+
+50 items, InsertSort execute time: 0.000791 seconds
+50 items, BubbleSort execute time: 0.001514 seconds
+
+<hr />
+
+60 items, InsertSort execute time: 0.001122 seconds
+60 items, BubbleSort execute time: 0.002505 seconds
+
+<hr />
+
+70 items, InsertSort execute time: 0.001565 seconds
+70 items, BubbleSort execute time: 0.002964 seconds
+
+<hr />
+
+80 items, InsertSort execute time: 0.001567 seconds
+80 items, BubbleSort execute time: 0.003939 seconds
+
+<hr />
+
+90 items, InsertSort execute time: 0.002339 seconds
+90 items, BubbleSort execute time: 0.004997 seconds
+
+<hr />
+
+&nbsp;

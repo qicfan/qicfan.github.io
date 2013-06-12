@@ -1,0 +1,275 @@
+---
+layout: post
+title: (转)python测试驱动开发
+tags:
+- python
+- 技术杂谈
+- 测试驱动开发
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  views: '246'
+---
+作者: Jason Diamond
+译者: 吴海燕
+原文发表日期：12/02/2004
+翻译日期：2/17/2005
+原文件位置：http://www.onlamp.com/pub/a/python/2004/12/02/tdd_pyunit.html
+ 
+l         介绍
+l         Python的unittest模块
+l         动机
+l         样例输入
+l         让我们开始吧
+l         小步前进
+l         重构
+l         总结 
+介绍
+
+测试驱动开发不是测试。测试驱动开发是开发(和设计)，主要用于提高设计和代码的质量。而单元测试样例只不过是其产生的一个有用的副产品而已。
+以上就是我要告诉你的关于测试驱动的事情，本文剩下的就是要告诉你测试驱动是如何的工作的。现在和我一起开始开发一个小小工具，这里我们会遇到错误，解决错误并且还会根据测试结果来改变我们的设计，另外，我们还将使用到重构，设计模式和面向对象思想。为了让我们的开发更加的方便，我们使用Python来做这次的开发。
+Python十分便于进行测试驱动开发，因为他可以在不妨碍我们工作的同时很好的完成需要做的工作。甚至我们不需要任何额外的模块就可以做测试驱动开发，因为需要的模块已经包含在了标准发行版里面了。
+这篇文章里我假定你熟悉Python，但是不要求熟悉测试驱动开发或者Python的unittest模块。事实上，本文并不要求你知道多少^_^
+ 
+Python的unittest模块
+
+自从2.1版本开始，Python的标准库当中就已经包含了unittest这个模块了，此模块基于Java的单元测试标准框架Junit（Kent Beck和Erich Gamma编写）。在2.1之前的，此模块名为PyUnit，需要独立下载。
+下面让我们开始吧，这儿有一个函数和他的测试―――在一个文件里面。
+import unittest
+# 这儿是函数
+def IsOdd(n):
+    return n % 2 == 1
+ 
+# 这儿是单元测试
+class IsOddTests(unittest.TestCase):
+ 
+    def testOne(self):
+        self.failUnless(IsOdd(1))
+ 
+    def testTwo(self):
+        self.failIf(IsOdd(2))
+ 
+def main():
+    unittest.main()
+ 
+if __name__ == '__main__':
+    main()
+灯
+这篇文章里，我会使用交通灯来表示测试结果。绿色代表测试通过，红色警告我们测试失败。而一个亮黄色的灯这表示出现了一个问题，使我们不能完成测试。TDD开发者通常谈论Junit的图形测试运行程序中 的绿灯或者绿条
+在从unittest.TestCase继承的类当中以test开头，有一个名为self的参数的方法我们就称之为Test Cases。在上面的例子里面，testOne和testTwo就是两个Test Cases
+将相关的test cases放到一个从unittest.TestCase继承的类当中，这个类我们就称之为test fixture，上面的IsOddTest就是一个test fixture,虽然这个类是从TestCase继承，而不是从TestFixture继承的。
+       Test fixture可以包含setUp和tearDown方法，这两个方法分别在test case运行前和运行后运行。在fixtures里面允许使用setUp方法是一个明智的决定，因为这样我们可以将公用的初始化代码从各个test cases里面转移到setUp当中来。
+在Python程序里面，我们通常不用tearDown方法，因为我们通常依赖Python的垃圾收集系统来收集无用对象。不过当我们测试数据库的时候，tearDown就有用了，我们可以用它来关闭连接，删除表格等等。
+让我们回过头来重新看看main函数，这个在unittest模块里面定义的函数允许我们以与调用其他脚本的相同方式来执行测试，这个函数检查sys.argv，通过它来自定义测试输出结果或者只执行指定的fixtures或cases(使用—help来获得帮助)。默认的情况下面会执行包含unittest.main()函数的文件里面的所有的fixtures。
+执行上面测试脚本我们将得到下面的结果：
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+ 
+OK
+如果第二个测试失败了，那么我们会得到下面这个：
+.F
+======================================================================
+FAIL: testTwo (__main__.IsOddTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\jason\projects\tdd-py\test.py", line 14, in testTwo
+    self.failIf(IsOdd(2))
+  File "C:\Python23\lib\unittest.py", line 274, in failIf
+    if expr: raise self.failureException, msg
+AssertionError
+ 
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+ 
+FAILED (failures=1)
+一般情况下，我们不会将测试程序和被测试程序放在一个文件里面，但是在开始的时候这样作也不会有什么坏处，毕竟我们还可以重构代码。
+动机
+
+想象我容易忘事：
+0 0 * * * [ `date +\%m` -ne `date -d +4days +\%m` ] \
+    && mail -s 'Pay the rent!' me-and-my-wife@example.org < /dev/null
+上面这行有些令人迷惑的代码使我从我的crontab里面摘录出来的，它在每个月的最后四天里面发邮件通知我交租金。很惨吗？也许吧，不过从我使用了他之后，我再也没有迟交过租金。
+当然，这并不适合于所有的情况――尤其是通知只发生一次的情况下。而且，我也没有办法教会我的妻子使用bash脚本来添加一个通知。
+       大部分的人使用老式的挂历来做这样的事情，但这种方式对我来讲太老土了。
+我可以使用Outlook或者Evolution或其他一些程序，但是那又会带来另外一个麻烦的问题，因为我们并不仅仅使用一台计算机。我们在家里和公司使用多个机算计和不同的操作系统，我要怎么样才能够在这些计算机之间同步？在我的工程里面我发现了我可以使用email，不管我用的哪台机器，什么操作系统，我都可以通过IMAP来检查我的Email，这样我就可以通过Email来通知我交租金了。
+那么，为什么不像我通知交租那样的使用calendar来通知我即将发生的事情呢？而且，我还知道有哪些程序可以做这样的工作：BSD的calendar程序以及新的pal程序。
+       我的妻子和我有一个私人的Wiki用来记录笔记，那很好用。虽然我的妻子是一个会计师而不是一个技术人员，但是她可以毫无障碍的使用她。我指出了我们可以使用wiki来编辑我们的日历文件，然后我可以写一个计划任务去从wiki上面摘取这个日历文件--般我用wget—然后通过管道传输到我选定的工具里面去。不幸的是，当我仔细的研究了calendar和pal之后，我发现他们都不是我想要的。
+       Calendar的文件要求使用<tab>字符来分开日期和描述，但是在使用我们自己的wiki的时候，<tab>将会使我们跳出编辑界面。而且calendar也不支持pal所支持的自定义输出格式。
+       而pal的格式对于我而言，有过于的难以掌握，而且他也不支持一个我所想要的重要功能：在每个月的最后几天发出通知。
+样例输入
+
+我的妻子和我坐下来讨论了我们会使用到的格式。下面就是一些例子
+ 
+30 Nov 2004: Dinner with the Darghams.
+ 
+April 10: Happy Anniversary!
+ 
+Wednesday: Piano lesson.
+ 
+Last Thursday: Goody night at book study. Yum.
+ 
+-1: Pay the rent!
+与Calendar的格式不同，这里面是用’:’来分隔日期和描述。与Calendar相同的是，省略的字段使用通配符表示。”April 10”的事件在每年这个时间都会发生，”Last Thursday”事件在每年的每月的最后一个星期四发生，”-1”时间在每年每月的最后一天发生，这个是从Python的array的语法中得来得灵感，foo[-1]选择foo数组里面最后一个元素，也许这个有些令人费解，但是我妻子很快就接受了它。
+       我的目标是要写一个小程序，然后使用计划任务运行它读取此格式的文件，然后在事件到来的前七天里发送邮件给我和我的妻子。这个看上去并不难，不是吗？
+       下面我们将要进入程序的写作过程，注意，我并不是先写程序然后再写这篇文章的，我是一边的写程序一边写这篇文章。是的，我在下面的过程当中会犯错误，而且我也做好了犯错误的准备了，事实上，犯错误在某种程度上是一个很好的学习方法。
+      
+让我们开始吧
+
+测试驱动意味着我要在开始编写代码之前就要编写好这个代码的测试代码。每当我开始一个新的项目的时候，我总是先创建一个会失败的fixture。如下所示：
+import unittest
+class FooTests(unittest.TestCase):
+ 
+    def testFoo(self):
+        self.failUnless(False)
+ 
+def main():
+    unittest.main()
+ 
+if __name__ == '__main__':
+    main()
+我习惯于这么做，因为这样可以确保测试程序被正确的运行了。
+注意到上面的类名为FooTests，并且有一个名为testFoo的方法，知道目前位置我还不知道我要测试一些什么，我只是确保我已经做好了一切的准备。下面让我们开始测试制定天，月，年的事件，为了创建测试程序，我需要知道去测试什么。我是需要一个类呢，还是仅仅一个函数？现在是我们带上设计着帽子思考的时候了，我们可以根据我们以前的经验来设计一些东西出来，这会儿犯一些错误也没有什么关系，因为测试会在我们做出太多的错误之前就告诉我们，目前我们还不需要那些带着图标的设计方案，这些工作我们可以留到我们确切的知道如何去做的时候去做。
+在这个项目里面，我会创建用来匹配特定日期的对象，这些对象起到一个“模式”的作用，当然了，我需要写一个分析器用来读取日历文件然后创建这些模式对象，不过这些我们留到以后再去做，现在让我们先来完成这些模式对象。
+我们可能需要各种不同的模式对象――但是目前我不这样认为，因为那样也可能是不对的。相反的，我会先开始编码，然后由代码告诉我应该怎么去做。
+def testMatches(self):
+    p = DatePattern(2004, 9, 28)
+    d = datetime.date(2004, 9, 28)
+    self.failUnless(p.matches(d))
+因为我已经知道了我需要测试什么了，所以我将testFoo改名为testMatches以便更好的反映测试目的。同时，我还定义了一个类名DatePattern和一个方法matches(datetime模块是在2.3版本以上已经包含在标准模块里面了，只需要包含这个模块就可以用了)。
+这个测试毫无疑问的会失败，因为我还没有实现DatePattern类，不过我已经知道了我需要去实现那个类了，同时我也清楚了__init__方法的参数要求，下面就是根据测试反映而编写的代码
+class DatePattern:
+ 
+    def __init__(self, year, month, day):
+        pass
+ 
+    def matches(self, date):
+        return True
+现在测试通过了，是时候编写下一个测试了。
+你也许认为我在开玩笑，但是事实上这是真的。
+小步前进
+
+在小步增加功能的情况之下，测试驱动开发是最合适的了。你只需要编写代码使失败的测试通过，一旦测试通过，那么我们就完成了编码工作，就应该停下来。
+前面的那些代码并没有太多的用途，因为他匹配任何日期。我如何判断上面的程序已经实现了我所想要的功能呢，很简单，添加下面这个测试：
+def testMatchesFalse(self):
+    p = DatePattern(2004, 9, 28)
+    d = datetime.date(2004, 9, 29)
+    self.failIf(p.matches(d))
+现在我们没有通过测试。
+我可以修改matches方法，让他返回False值，但是这样做又会使得前一个测试程序无法通过，没有办法，我只好去正确的实现DatePattern这个类了。下面就是修改之后的代码：
+class DatePattern:
+ 
+    def __init__(self, year, month, day):
+        self.date = datetime.date(year, month, day)
+ 
+    def matches(self, date):
+        return self.date == date
+测试全部通过了，很好！不过我并不满意DatePattern类，因为到目前为止，他只不过是Python的datetime模块的一个简单的包装，既然如此，我为什么不直接的去使用datetime模块呢？
+也许DatePattern并没有什么用去，不过我并不打算由我来决定这个类是否无用，相反的，我会写另外一个测试――一个我用来肯定DatePattern类有存在必要的测试。
+def testMatchesYearAsWildCard(self):
+    p = DatePattern(0, 4, 10)
+    d = datetime.date(2005, 4, 10)
+    self.failUnless(p.matches(d))
+太好了，这个测试失败了！
+为什么我会如此的高兴这个测试失败呢？因为：他证明了DatePattern这个类还没有完整的实现，他不能够仅仅只是包装一下datetime模块，这样是不够的。
+就在编写这个测试的时候，我决定使用0来表示通配符，因为没有一个年，月，日会是0。
+不会再有比这个更好的选择了，我决定从现在开始就用他了。
+现在让我们来编写代码以使测试通过：
+class DatePattern:
+ 
+    def __init__(self, year, month, day):
+        self.year  = year
+        self.month = month
+        self.day   = day
+ 
+    def matches(self, date):
+        return ((self.year and self.year == date.year or True) and
+                 self.month == date.month and
+                 self.day   == date.day)
+说实话，我已经感觉到我需要重构以便添加更多的通配符功能到这个类上面来了，不过在这之前，我们还是先来编写更多的一些测试。
+让我们添加一个测试来检验月使用通配符的情况：
+def testMatchesYearAndMonthAsWildCards(self):
+    p = DatePattern(0, 0, 1)
+    d = datetime.date(2004, 10, 1)
+    self.failUnless(p.matches(d))
+然后我们修改matches方法以使测试通过：
+def matches(self, date):
+    return ((self.year  and self.year  == date.year  or True) and
+            (self.month and self.month == date.month or True) and
+             self.day == date.day)
+可以看到现在这个方法已经越来越不美观了，看来我们第一个需要重构的就是他了。
+现在我已经有了测试用来检验年和月的通配符，那么我是不是还要加上天的通配符呢？一个只有通配符的匹配对象会匹配任何的一天，我实在想不出来这个有什么的用，所以我就不再去写这样的测试了。这样，我也就不会去实现那些不需要的DataPattern类了，记住，代码只有在测试失败的情况之下才需要编写，这样就阻止了我们去过度的设计一个程序，防止我们的程序过度复杂。
+现在让我们继续，我们需要支持制定每周的某一天的模式对象：
+def testMatchesWeekday(self):
+    p = DatePattern(
+那么，我们现在该作些什么呢？
+这个时候我已经以使到了DataPattern类并不能够满足这个测试的要求，他的__init__方法并不能够接受星期天这个参数。我应当使用另外一个类，还是修改目前的这个呢？
+目前我只打算修改眼前的这个，因为这个需要的工作量是最小的，如果事实证明了这样做行不通，我还可以重构他。
+def testMatchesWeekday(self):
+    p = DatePattern(0, 0, 0, 2) # 2 is Wednesday
+    d = datetime.date(2004, 9, 29)
+    self.failUnless(p.matches(d))
+因为DatePattern的__init__并不能够接受5个参数，所以这个测试失败了。于是我修改__init__方法如下：
+def __init__(self, year, month, day, weekday=0):
+    self.year    = year
+    self.month   = month
+    self.day     = day
+    self.weekday = weekday
+我将weekday这个参数赋予了默认值，这样我就可以不用去修改其他的test case了。除了新添加的这个test case之外，其他的都通过了测试。
+聪明的读者一定已经注意到了这里面我传递了0这个通配符给“天”参数，而这个正是我先前认为没有必要的，但是现在我需要了，所以我修改了matches方法如下：
+def matches(self, date):
+    return ((self.year and self.year == date.year or True) and
+            (self.month and self.month == date.month or True) and
+            (self.day and self.day == date.day or True) and
+            (self.weekday and self.weekday == date.weekday() or True))
+现在所有的参数都允许接收通配符了，有趣的是，新的方法没有通过testMatchesFalse所有测试，究竟除了什么问题？
+重构
+
+现在我还不能够通过查看代码看出来为什么testMatchesFalse会失败，这需要通过调试才行。不幸的是，我将matches方法所有的逻辑处理都放到一个表达式当中了（占用了4行），这样我没有地方可以插入print语句来帮助我定位错误地点。看来是时候做重构了，这里我想用到的重构方法是Joshua Kerievsky's的《Refactoring to Patterns》书里面讲到的Compose Method,通过从matches方法里面分解出各个更小的方法，我不仅可以让matches变得更易理解，而且也更加的容易调试。
+下面是修改之后的结果：
+def matches(self, date):
+    return (self.yearMatches(date) and
+            self.monthMatches(date) and
+            self.dayMatches(date) and
+            self.weekdayMatches(date))
+ 
+def yearMatches(self, date):
+    if not self.year: return True
+    return self.year == date.year
+ 
+def monthMatches(self, date):
+    if not self.month: return True
+    return self.month == date.month
+ 
+def dayMatches(self, date):
+    if not self.day: return True
+    return self.day == date.day
+ 
+def weekdayMatches(self, date):
+    if not self.weekday: return True
+    return self.weekday == date.weekday()
+你应该已经发现了，matches方法现在变得更加容易理解了。看上去好像没有必要这么做，但是写清晰的代码比写“聪明”的代码要好得多。就是因为一开始耍了小聪明，导致出现了一个bug，如果从一开始就这样做的话，就不会犯那个错误了。
+       在进行了重构之后，我原本以为testMatchesFalse依然会失败，但是它却通过了测试。在我一开始的程序逻辑里面我犯了一个错误，并且我没有找的到这个错误在哪儿――找到这个错误的任务就留给读者作为一个练习好了。现在，不仅仅有了更加简单的代码，而且他也可以正常的工作了，这就很好了。
+       如果不使用测试，我能够发现这个错误嘛？我想应该是会发现的，但是要花多长的时间来发现就不知道了，而使用了测试，我立刻就发现了这个错误，而且也知道了如何去修复他。
+       通配符在此之前的测试里面一直是可以正常的工作的，这很好，但是我想下面的这个测试就会让通配符无法通过了。代码如下：
+def testMatchesLastWeekday(self):
+    p = DatePattern(0, 0, 0, 3
+现在，我又不知道如何去做了。
+这看上去不太让人理解（事实上也是如此――为什么Python的datetime模块不能够定义一些星期的常量呢？）3代表了星期四。
+我要如何的表示我只是要匹配一个月的最后一个星期四呢？我是不是还要添加一个参数到DatePattern.__init__方法里面？
+看着越来越多的参数加入到了类里面，我开始觉得我已经在DatePattern里面加入了太多的功能了。
+总结
+
+我还没有写太多的代码，这是一件好事！因为我已经感觉到了我已经写完了的这些代码并不怎么的好，也不能够完全的满足我的要求，没有测试，我都不知道什么时候才能够发现这一点。而现在，我还没有花多少的时间在DatePattern类上面，所以，如果有必要的话，我完全可以将DatePattern丢掉。
+我已经有了一些关于如何的重构代码以使得他可以更加得简单和更加得符合我的要求，但是那个要等到本文的第二部分才行，我会在最短的时间里面将第二部分发布出来的。
+ 
+代码和测试可以下载和检查
+ 
+Jason Diamond是居住在加利福尼亚的南部，他是C++,C#和XML方面的顾问
+吴海燕居住在北京交通大学附近，海洋馆对面。现为北京新网互联公司Windows运维部门工程师。专长于Windows虚拟主机管理，对Python和Linux都很感兴趣。
+ 
+译者的话：
+       我将每周翻译一篇10页左右的文章。大部分会是Python方面的，本文的第二部分我将在下周翻译完成。本文的第三部分作者还没有写完，可能等我翻译完第二部分的时候就会写完了^_^。
+       这是第一篇文章。失误之处在所难免，我也是想要通过翻译文章来提高我自己的翻译水平的，往后会越来越好的。事实上，这篇文章翻得我自己也不满意^_^！
