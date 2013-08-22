@@ -3,11 +3,13 @@ author: qicfan
 comments: true
 date: 2013-08-22 14:16:21+00:00
 layout: post
-slug: '%e9%9a%8f%e7%ac%94'
+slug: iphone4s
 title: 有锁iphone4s通过描述文件使用3G和VPN
-wordpress_id: 472
 categories:
 - 其他
+tags:
+- iphone
+
 ---
 
 因为入了个有锁的Iphone 4s，所以又开始了折腾之旅。机器刚拿回来的时候，2G可以上网，3G不行。由于以前折腾过android，所以直觉告诉我应该是APN的问题，但是没有越狱的话，没办法手动修改APN；自己有mac本，所以知道osx有个东西叫描述文件，可以修改一些系统设置，所以就打算从这个方面入手。
