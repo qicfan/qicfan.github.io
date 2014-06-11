@@ -10,5 +10,5 @@
 {% when "custom" %}
   {% include custom/analytics %}
 {% endcase %}
-
+<span style="display:none;"><script src="http://s13.cnzz.com/stat.php?id=3025894&web_id=3025894" language="JavaScript"></script></span>
 {% endif %}
