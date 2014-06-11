@@ -1,6 +1,6 @@
 ---
 layout: default
-title: zeroq的小作坊
+title: Dean.Q的菜园子
 tagline: 积淀
 ---
 {% for post in site.posts %}
