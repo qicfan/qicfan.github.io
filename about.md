@@ -2,7 +2,7 @@
 author: qicfan
 comments: true
 date: 2011-04-20 08:41:48+00:00
-layout: page
+layout: default
 slug: about-me
 title: about me
 wordpress_id: 30
